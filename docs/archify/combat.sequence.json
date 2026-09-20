@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "玩家命中敌人时序",
+    "quality_profile": "showcase",
+    "viewBox": [900, 680],
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "default": { "label": "调用" },
+        "emphasis": { "label": "主路径" },
+        "return": { "label": "返回" },
+        "dashed": { "label": "销毁" }
+      }
+    },
+    "views": [
+      {
+        "id": "shot",
+        "label": "开火",
+        "focus": ["player", "rocket"],
+        "note": "Player 按冷却 Instantiate 玩家子弹。"
+      },
+      {
+        "id": "hit",
+        "label": "结算",
+        "focus": ["rocket", "enemy", "gm"],
+        "note": "扣血与加分在 Enemy 上完成，子弹随后销毁。"
+      }
+    ]
+  },
+  "participants": [
+    { "id": "player", "type": "frontend", "label": "Player", "sublabel": "飞机" },
+    { "id": "rocket", "type": "backend", "label": "Rocket", "sublabel": "玩家子弹" },
+    { "id": "enemy", "type": "backend", "label": "Enemy", "sublabel": "敌机" },
+    { "id": "gm", "type": "backend", "label": "GameManager", "sublabel": "分数" },
+    { "id": "fx", "type": "frontend", "label": "Explosion", "sublabel": "特效" }
+  ],
+  "segments": [
+    { "from": 150, "to": 280, "label": "开火" },
+    { "from": 300, "to": 500, "label": "命中" },
+    { "from": 530, "to": 620, "label": "结算" }
+  ],
+  "messages": [
+    { "id": "spawn-bullet", "from": "player", "to": "rocket", "y": 190, "label": "Instantiate(m_rocket)", "variant": "emphasis" },
+    { "id": "enter", "from": "rocket", "to": "enemy", "y": 330, "label": "OnTriggerEnter PlayerRocket", "variant": "emphasis" },
+    { "id": "power", "from": "enemy", "to": "rocket", "y": 380, "label": "读取 m_power", "variant": "return" },
+    { "id": "score", "from": "enemy", "to": "gm", "y": 450, "label": "AddScore(m_point)", "variant": "emphasis" },
+    { "id": "boom", "from": "enemy", "to": "fx", "y": 545, "label": "Instantiate 爆炸", "variant": "dashed" },
+    { "id": "kill-r", "from": "rocket", "to": "enemy", "y": 580, "label": "双方 Destroy", "variant": "dashed" }
+  ],
+  "activations": [
+    { "participant": "player", "from": 185, "to": 210, "type": "frontend" },
+    { "participant": "rocket", "from": 190, "to": 590, "type": "backend" },
+    { "participant": "enemy", "from": 325, "to": 590, "type": "backend" },
+    { "participant": "gm", "from": 445, "to": 470, "type": "backend" },
+    { "participant": "fx", "from": 540, "to": 575, "type": "frontend" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "要点",
+      "items": [
+        "扣血与加分在 Enemy 上完成，子弹随后销毁"
+      ]
+    }
+  ]
+}

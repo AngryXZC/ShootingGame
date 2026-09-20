@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "一局游戏生命周期",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "start": { "label": "入口" },
+        "active": { "label": "进行中" },
+        "waiting": { "label": "暂停" },
+        "decision": { "label": "判定" },
+        "success": { "label": "离开" },
+        "failure": { "label": "失败可恢复" }
+      }
+    },
+    "views": [
+      {
+        "id": "main",
+        "label": "主轨",
+        "focus": ["title", "playing", "quit"],
+        "note": "标题进入关卡，暂停菜单可退出进程。"
+      },
+      {
+        "id": "recover",
+        "label": "失败恢复",
+        "focus": ["playing", "failed"],
+        "note": "玩家销毁后可再试一次，重载当前关卡。"
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "main", "label": "场景阶段" },
+    { "id": "waiting", "label": "暂停" },
+    { "id": "exceptions", "label": "失败" },
+    { "id": "terminal", "label": "离开" }
+  ],
+  "states": [
+    { "id": "title", "type": "start", "label": "标题", "sublabel": "start.unity", "lane": "main", "col": 0, "step": "01", "tag": "TitleScreen" },
+    { "id": "playing", "type": "active", "label": "进行中", "sublabel": "level1 timeScale=1", "lane": "main", "col": 1, "step": "02", "tag": "Update" },
+    { "id": "paused", "type": "waiting", "label": "暂停", "sublabel": "timeScale=0", "lane": "waiting", "col": 1, "tag": "Esc" },
+    { "id": "failed", "type": "failure", "label": "游戏失败", "sublabel": "Player 已销毁", "lane": "exceptions", "col": 2, "tag": "可重开" },
+    { "id": "quit", "type": "success", "label": "退出游戏", "sublabel": "Application.Quit", "lane": "terminal", "col": 2, "tag": "进程结束" }
+  ],
+  "transitions": [
+    { "id": "esc-pause", "from": "playing", "to": "paused", "label": "Esc", "variant": "default", "fromSide": "bottom", "toSide": "top", "route": "drop", "labelAt": [180, 270] },
+    { "id": "resume", "from": "paused", "to": "playing", "label": "继续游戏", "variant": "emphasis", "fromSide": "left", "toSide": "bottom", "labelDy": 28 },
+    { "id": "player-dead", "from": "playing", "to": "failed", "label": "装甲耗尽", "variant": "security", "fromSide": "right", "toSide": "top" },
+    { "id": "retry", "from": "failed", "to": "playing", "label": "再试一次", "variant": "emphasis", "fromSide": "left", "toSide": "right", "labelAt": [780, 240] },
+    { "id": "quit-from-pause", "from": "paused", "to": "quit", "label": "退出游戏", "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "drop", "labelAt": [633, 350] }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "要点",
+      "items": [
+        "暂停只改 timeScale；失败可再试一次，静态最高分保留"
+      ]
+    }
+  ]
+}

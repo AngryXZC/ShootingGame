@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "玩家每帧控制流",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": { "label": "玩家脚本" },
+        "backend": { "label": "开火" },
+        "external": { "label": "输入" },
+        "security": { "label": "失败" }
+      }
+    },
+    "views": [
+      {
+        "id": "move-path",
+        "label": "移动",
+        "focus": ["keys", "kbmove", "mouse", "aim"],
+        "note": "方向键走 Translate；无键盘时才用鼠标 MoveTo。"
+      },
+      {
+        "id": "fire-end",
+        "label": "开火与失败",
+        "focus": ["cool", "fire", "dead"],
+        "note": "冷却后开火；装甲耗尽则销毁玩家。"
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "input", "label": "输入" },
+    { "id": "move", "label": "移动" },
+    { "id": "combat", "label": "开火" },
+    { "id": "exceptions", "label": "失败", "variant": "exception" }
+  ],
+  "mainPath": ["keys", "kbmove", "cool", "fire"],
+  "nodes": [
+    { "id": "keys", "lane": "input", "col": 0, "type": "external", "label": "方向键", "sublabel": "moveh / movev" },
+    { "id": "mouse", "lane": "input", "col": 2, "type": "external", "label": "鼠标左键", "sublabel": "无键盘时" },
+    { "id": "kbmove", "lane": "move", "col": 1, "type": "frontend", "label": "Translate", "sublabel": "同步目标点" },
+    { "id": "aim", "lane": "move", "col": 3, "type": "frontend", "label": "MoveTo", "sublabel": "射线 plane" },
+    { "id": "cool", "lane": "combat", "col": 3, "type": "backend", "label": "射击冷却", "sublabel": "0.1 秒" },
+    { "id": "fire", "lane": "combat", "col": 5, "type": "backend", "label": "发射子弹", "sublabel": "Instantiate" },
+    { "id": "dead", "lane": "exceptions", "col": 5, "type": "security", "label": "装甲耗尽", "sublabel": "Destroy 玩家" }
+  ],
+  "edges": [
+    { "id": "keys-kb", "from": "keys", "to": "kbmove", "variant": "emphasis" },
+    { "id": "keys-mouse", "from": "keys", "to": "mouse", "label": "无方向键", "role": "branch", "variant": "dashed", "fromSide": "right", "toSide": "left", "route": "straight" },
+    { "id": "mouse-aim", "from": "mouse", "to": "aim", "variant": "default" },
+    { "id": "kb-cool", "from": "kbmove", "to": "cool", "variant": "emphasis" },
+    { "id": "aim-cool", "from": "aim", "to": "cool", "variant": "dashed", "role": "branch" },
+    { "id": "cool-fire", "from": "cool", "to": "fire", "variant": "emphasis" },
+    { "id": "fire-dead", "from": "fire", "to": "dead", "label": "受击生命归零", "variant": "security", "role": "error" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "要点",
+      "items": [
+        "方向键优先于鼠标跟踪",
+        "冷却后开火；装甲耗尽则销毁玩家"
+      ]
+    }
+  ]
+}

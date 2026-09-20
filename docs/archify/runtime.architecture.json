@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ShootingGame 运行时结构",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/AngryXZC/ShootingGame.git",
+      "revision": "f660b5485e9e58a5e0b98181ea73502db5df3485"
+    },
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": { "label": "界面脚本" },
+        "backend": { "label": "玩法逻辑" },
+        "external": { "label": "玩家输入" },
+        "messagebus": { "label": "物理事件" }
+      }
+    },
+    "views": [
+      {
+        "id": "boot-path",
+        "label": "开局路径",
+        "focus": ["input", "title", "scene", "gm"],
+        "note": "从标题页 LoadScene 进入 level1，并建立 GameManager 单例。"
+      },
+      {
+        "id": "play-loop",
+        "label": "对战回路",
+        "focus": ["player", "spawn", "phys", "gm"],
+        "note": "玩家与刷怪进入 Trigger，分数写回 GameManager。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "input",
+      "type": "external",
+      "label": "玩家输入",
+      "sublabel": "方向键 / 鼠标 / 空格",
+      "pos": [40, 300],
+      "size": [150, 64]
+    },
+    {
+      "id": "title",
+      "type": "frontend",
+      "label": "TitleScreen",
+      "sublabel": "start.unity",
+      "pos": [280, 300],
+      "size": [150, 64],
+      "sources": [{ "path": "Assets/Scripts/TitleScreen.cs", "line": 15 }]
+    },
+    {
+      "id": "scene",
+      "type": "backend",
+      "label": "SceneManager",
+      "sublabel": "加载 level1",
+      "pos": [520, 300],
+      "size": [150, 64]
+    },
+    {
+      "id": "gm",
+      "type": "backend",
+      "label": "GameManager",
+      "sublabel": "单例 / 分数 / 暂停",
+      "pos": [760, 300],
+      "size": [160, 64],
+      "tag": "Instance",
+      "sources": [{ "path": "Assets/Scripts/GameManager.cs", "line": 17 }]
+    },
+    {
+      "id": "hud",
+      "type": "frontend",
+      "label": "OnGUI",
+      "sublabel": "装甲 / 得分 / 菜单",
+      "pos": [760, 120],
+      "size": [160, 64],
+      "sources": [{ "path": "Assets/Scripts/GameManager.cs", "line": 46 }]
+    },
+    {
+      "id": "player",
+      "type": "frontend",
+      "label": "Player",
+      "sublabel": "移动与射击",
+      "pos": [1000, 180],
+      "size": [150, 64],
+      "sources": [{ "path": "Assets/Scripts/Player.cs", "line": 28 }]
+    },
+    {
+      "id": "spawn",
+      "type": "backend",
+      "label": "EnemySpawn",
+      "sublabel": "定时 Instantiate",
+      "pos": [1000, 420],
+      "size": [150, 64],
+      "sources": [{ "path": "Assets/Scripts/EnemySpawn.cs", "line": 15 }]
+    },
+    {
+      "id": "phys",
+      "type": "messagebus",
+      "label": "Physics Trigger",
+      "sublabel": "OnTriggerEnter + Tag",
+      "pos": [1240, 300],
+      "size": [170, 64]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "标题场景 start",
+      "wraps": ["title"]
+    },
+    {
+      "kind": "region",
+      "label": "关卡场景 level1",
+      "wraps": ["gm", "hud", "player", "spawn", "phys"]
+    }
+  ],
+  "connections": [
+    { "id": "input-title", "from": "input", "to": "title", "label": "开始游戏", "variant": "emphasis" },
+    { "id": "title-scene", "from": "title", "to": "scene", "label": "LoadScene" },
+    { "id": "scene-gm", "from": "scene", "to": "gm", "label": "Awake 设 Instance" },
+    { "id": "gm-hud", "from": "gm", "to": "hud", "label": "读生命与分数", "fromSide": "top", "toSide": "bottom" },
+    { "id": "gm-player", "from": "gm", "to": "player", "label": "绑定 Player" },
+    { "id": "scene-spawn", "from": "scene", "to": "spawn", "label": "关卡刷怪点", "fromSide": "bottom", "toSide": "left" },
+    { "id": "player-phys", "from": "player", "to": "phys", "label": "Trigger" },
+    { "id": "spawn-phys", "from": "spawn", "to": "phys", "label": "敌人 Trigger", "fromSide": "right", "toSide": "bottom" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "开局",
+      "items": [
+        "Build Settings 顺序是 start 再到 level1",
+        "TitleScreen 调用 SceneManager.LoadScene"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "关卡",
+      "items": [
+        "GameManager.Awake 写入静态 Instance",
+        "Start 里按 Player Tag 绑定飞机"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "碰撞",
+      "items": [
+        "全部走 Trigger 与 Tag，没有独立网络层",
+        "Enemy 命中后调用 GameManager.AddScore"
+      ]
+    }
+  ]
+}

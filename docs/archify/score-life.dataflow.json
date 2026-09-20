@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "生命与分数数据流",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "default": { "label": "普通流" },
+        "emphasis": { "label": "主数据" },
+        "dashed": { "label": "显示" },
+        "database": { "label": "内存状态" }
+      }
+    },
+    "views": [
+      {
+        "id": "life-path",
+        "label": "生命",
+        "focus": ["inputHit", "playerLife", "hud"],
+        "note": "Trigger 改 Player.m_life，OnGUI 读取后显示装甲。"
+      },
+      {
+        "id": "score-path",
+        "label": "分数",
+        "focus": ["enemyLife", "score", "hiscore", "hud"],
+        "note": "击毁敌人写入 m_score，并可能抬高静态 m_hiscore。"
+      }
+    ]
+  },
+  "stages": [
+    { "label": "事件" },
+    { "label": "实体字段" },
+    { "label": "全局" },
+    { "label": "显示" }
+  ],
+  "nodes": [
+    { "id": "inputHit", "type": "messagebus", "label": "玩家受击", "sublabel": "非 PlayerRocket", "stage": 0, "row": 0, "tag": "Trigger" },
+    { "id": "killEvt", "type": "messagebus", "label": "击毁敌人", "sublabel": "PlayerRocket", "stage": 0, "row": 2, "tag": "Trigger" },
+    { "id": "playerLife", "type": "database", "label": "Player.m_life", "sublabel": "默认 3", "stage": 1, "row": 0, "tag": "装甲" },
+    { "id": "enemyLife", "type": "database", "label": "Enemy.m_life", "sublabel": "减去 m_power", "stage": 1, "row": 2, "tag": "血量" },
+    { "id": "score", "type": "database", "label": "m_score", "sublabel": "当前关卡", "stage": 2, "row": 2, "tag": "实例" },
+    { "id": "hiscore", "type": "database", "label": "m_hiscore", "sublabel": "静态字段", "stage": 2, "row": 4, "tag": "跨重载" },
+    { "id": "hud", "type": "frontend", "label": "OnGUI", "sublabel": "装甲 / 纪录 / 得分", "stage": 3, "row": 1, "tag": "IMGUI" }
+  ],
+  "flows": [
+    { "id": "hit-life", "from": "inputHit", "to": "playerLife", "label": "m_life - 1", "classification": "生命", "variant": "emphasis" },
+    { "id": "kill-elife", "from": "killEvt", "to": "enemyLife", "label": "m_life -= m_power", "classification": "伤害", "variant": "emphasis" },
+    { "id": "elife-score", "from": "enemyLife", "to": "score", "label": "AddScore(m_point)", "classification": "得分", "variant": "emphasis" },
+    { "id": "score-hi", "from": "score", "to": "hiscore", "label": "若更高则更新", "classification": "纪录", "variant": "dashed" },
+    { "id": "life-hud", "from": "playerLife", "to": "hud", "label": "装甲", "classification": "显示", "variant": "dashed" },
+    { "id": "score-hud", "from": "score", "to": "hud", "label": "得分", "classification": "显示", "variant": "dashed", "labelAt": [580, 430] },
+    { "id": "hi-hud", "from": "hiscore", "to": "hud", "label": "纪录", "classification": "显示", "variant": "dashed" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "要点",
+      "items": [
+        "伤害改 m_life；击毁写入 m_score，静态 m_hiscore 跨重载保留"
+      ]
+    }
+  ]
+}
